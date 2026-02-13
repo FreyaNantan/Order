@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Order</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #9BA0FE;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #9BA0FE;
+            outline: none;
+        }
+
+        button {
+            margin-top: 6px;
+            padding: 6px 12px;
+            border: 2px solid #9BA0FE;
+            border-radius: 8px;
+            background: white;
+            color: #9BA0FE;
+            cursor: pointer;
+        }
+
+        .active {
+            background: #9BA0FE;
+            color: white;
+        }
+
+        .add-box {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Data Order</h2>
+
+<div class="add-box">
+    <h3>Tambah Pesanan</h3>
+    <input type="text" id="namaBaru" placeholder="Nama Pembeli">
+    <input type="text" id="orderBaru" placeholder="Nama Makanan">
+    <button onclick="tambahData()">Tambah +</button>
+</div>
+
+<div id="list"></div>
+
+<script>
+const url = "https://starellie-default-rtdb.firebaseio.com/Order";
+
+function loadData() {
+    fetch(url + ".json")
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("list");
+        container.innerHTML = "";
+
+        for (let nama in data) {
+            const item = data[nama];
+
+            container.innerHTML += `
+                <div class="card">
+                    <h3>${nama}</h3>
+                    <p>Orderan: ${item.Orderan}</p>
+
+                    <p>Izin membeli lagi:</p>
+                    <button class="${item["Izin membeli lagi"] ? 'active' : ''}"
+                        onclick="updateData('${nama}', 'Izin membeli lagi', true)">
+                        TRUE
+                    </button>
+
+                    <button class="${!item["Izin membeli lagi"] ? 'active' : ''}"
+                        onclick="updateData('${nama}', 'Izin membeli lagi', false)">
+                        FALSE
+                    </button>
+
+                    <br><br>
+
+                    <p>Sudah siap kirim:</p>
+                    <button class="${item["Sudah siap kirim"] ? 'active' : ''}"
+                        onclick="updateData('${nama}', 'Sudah siap kirim', true)">
+                        TRUE
+                    </button>
+
+                    <button class="${!item["Sudah siap kirim"] ? 'active' : ''}"
+                        onclick="updateData('${nama}', 'Sudah siap kirim', false)">
+                        FALSE
+                    </button>
+
+                    <br><br>
+
+                    <button onclick="hapusData('${nama}')">
+                        Hapus Nama
+                    </button>
+                </div>
+            `;
+        }
+    });
+}
+
+function updateData(nama, field, value) {
+    fetch(url + "/" + nama + ".json", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            [field]: value
+        })
+    })
+    .then(() => loadData());
+}
+
+function hapusData(nama) {
+    if (confirm("Yakin mau hapus " + nama + "?")) {
+        fetch(url + "/" + nama + ".json", {
+            method: "DELETE"
+        })
+        .then(() => loadData());
+    }
+}
+
+function tambahData() {
+    const nama = document.getElementById("namaBaru").value.trim();
+    const order = document.getElementById("orderBaru").value.trim();
+
+    if (nama === "" || order === "") {
+        alert("Isi semua field dulu");
+        return;
+    }
+
+    fetch(url + "/" + nama + ".json", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            "Orderan": order,
+            "Izin membeli lagi": false,
+            "Sudah siap kirim": false
+        })
+    })
+    .then(() => {
+        document.getElementById("namaBaru").value = "";
+        document.getElementById("orderBaru").value = "";
+        loadData();
+    });
+}
+
+loadData();
+setInterval(loadData, 2000);
+</script>
+
+</body>
+</html>
