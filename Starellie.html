@@ -1,174 +1,107 @@
-<html>
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <title>Data Order</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #9BA0FE;
+            background: linear-gradient(to right, #8e8ef5, #6a6adf);
             margin: 0;
             padding: 20px;
         }
 
-        h2 {
-            text-align: center;
+        h1 {
             color: white;
         }
 
-        .card {
+        .container {
             background: white;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 20px;
             border-radius: 12px;
+            max-width: 500px;
+            margin: auto;
         }
 
         input {
             width: 100%;
-            padding: 8px;
-            margin-top: 6px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin: 8px 0;
             border-radius: 8px;
-            border: 2px solid #9BA0FE;
-            outline: none;
+            border: 2px solid #8e8ef5;
         }
 
         button {
-            margin-top: 6px;
-            padding: 6px 12px;
-            border: 2px solid #9BA0FE;
+            padding: 10px 15px;
             border-radius: 8px;
-            background: white;
-            color: #9BA0FE;
+            border: none;
             cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
         }
 
-        .active {
-            background: #9BA0FE;
+        .btn-primary {
+            background: #8e8ef5;
             color: white;
         }
 
-        .add-box {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+        .btn-primary.active {
+            background: #007bff;
+        }
+
+        ul {
+            margin-top: 20px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
 
-<h2>Data Order</h2>
+    <h1>Order</h1>
 
-<div class="add-box">
-    <h3>Tambah Pesanan</h3>
-    <input type="text" id="namaBaru" placeholder="Nama Pembeli">
-    <input type="text" id="orderBaru" placeholder="Nama Makanan">
-    <button onclick="tambahData()">Tambah +</button>
-</div>
+    <div class="container">
+        <h2>Tambah Pesanan</h2>
 
-<div id="list"></div>
+        <input type="text" id="namaPembeli" placeholder="Nama Pembeli">
+        <input type="text" id="namaMakanan" placeholder="Nama Makanan (Custom)">
 
-<script>
-const url = "https://starellie-default-rtdb.firebaseio.com/Order";
+        <button class="btn-primary" id="btnTambah">Tambah +</button>
 
-function loadData() {
-    fetch(url + ".json")
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("list");
-        container.innerHTML = "";
+        <ul id="listOrder"></ul>
+    </div>
 
-        for (let nama in data) {
-            const item = data[nama];
+    <script>
+        const btn = document.getElementById("btnTambah");
+        const list = document.getElementById("listOrder");
 
-            container.innerHTML += `
-                <div class="card">
-                    <h3>${nama}</h3>
-                    <p>Orderan: ${item.Orderan}</p>
+        btn.addEventListener("click", function () {
+            const nama = document.getElementById("namaPembeli").value;
+            const makanan = document.getElementById("namaMakanan").value;
 
-                    <p>Izin membeli lagi:</p>
-                    <button class="${item["Izin membeli lagi"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Izin membeli lagi', true)">
-                        TRUE
-                    </button>
+            if (nama === "" || makanan === "") {
+                alert("Isi semua data dulu!");
+                return;
+            }
 
-                    <button class="${!item["Izin membeli lagi"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Izin membeli lagi', false)">
-                        FALSE
-                    </button>
+            // Tambah warna biru saat aktif
+            btn.classList.toggle("active");
 
-                    <br><br>
+            // Tambah pesanan ke list
+            const li = document.createElement("li");
+            li.textContent = nama + " memesan " + makanan;
+            list.appendChild(li);
 
-                    <p>Sudah siap kirim:</p>
-                    <button class="${item["Sudah siap kirim"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Sudah siap kirim', true)">
-                        TRUE
-                    </button>
-
-                    <button class="${!item["Sudah siap kirim"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Sudah siap kirim', false)">
-                        FALSE
-                    </button>
-
-                    <br><br>
-
-                    <button onclick="hapusData('${nama}')">
-                        Hapus Nama
-                    </button>
-                </div>
-            `;
-        }
-    });
-}
-
-function updateData(nama, field, value) {
-    fetch(url + "/" + nama + ".json", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            [field]: value
-        })
-    })
-    .then(() => loadData());
-}
-
-function hapusData(nama) {
-    if (confirm("Yakin mau hapus " + nama + "?")) {
-        fetch(url + "/" + nama + ".json", {
-            method: "DELETE"
-        })
-        .then(() => loadData());
-    }
-}
-
-function tambahData() {
-    const nama = document.getElementById("namaBaru").value.trim();
-    const order = document.getElementById("orderBaru").value.trim();
-
-    if (nama === "" || order === "") {
-        alert("Isi semua field dulu");
-        return;
-    }
-
-    fetch(url + "/" + nama + ".json", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            "Orderan": order,
-            "Izin membeli lagi": false,
-            "Sudah siap kirim": false
-        })
-    })
-    .then(() => {
-        document.getElementById("namaBaru").value = "";
-        document.getElementById("orderBaru").value = "";
-        loadData();
-    });
-}
-
-loadData();
-setInterval(loadData, 2000);
-</script>
+            // Kosongkan input
+            document.getElementById("namaPembeli").value = "";
+            document.getElementById("namaMakanan").value = "";
+        });
+    </script>
 
 </body>
 </html>
