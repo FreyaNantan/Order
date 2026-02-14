@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Data Order</title>
+    <title>Data Order - Blue & White</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
@@ -10,9 +11,25 @@
             padding: 20px;
         }
 
+        /* Tombol Fullscreen Modern */
+        .fs-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #9BA0FE;
+        }
+
         h2 {
             text-align: center;
             color: white;
+            margin-top: 40px;
         }
 
         .card {
@@ -20,28 +37,38 @@
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 12px;
+            color: #444;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: #9BA0FE;
         }
 
         input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-top: 6px;
             margin-bottom: 10px;
             border-radius: 8px;
             border: 2px solid #9BA0FE;
             outline: none;
+            box-sizing: border-box;
         }
 
         button {
             margin-top: 6px;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border: 2px solid #9BA0FE;
             border-radius: 8px;
             background: white;
             color: #9BA0FE;
             cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
         }
 
+        /* State Tombol Aktif (Biru) */
         .active {
             background: #9BA0FE;
             color: white;
@@ -49,21 +76,35 @@
 
         .add-box {
             background: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
+        }
+
+        /* Garis pembatas tipis warna biru muda */
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 15px 0;
+        }
+
+        /* Pengaturan saat Layar Penuh */
+        :fullscreen body {
+            padding: 40px;
         }
     </style>
 </head>
 <body>
 
+<button class="fs-btn" onclick="toggleFullScreen()" id="fsBtn">🖥️ FULLSCREEN</button>
+
 <h2>Data Order</h2>
 
 <div class="add-box">
-    <h3>Tambah Pesanan</h3>
+    <h3 style="color: #9BA0FE;">Tambah Pesanan</h3>
     <input type="text" id="namaBaru" placeholder="Nama Pembeli">
     <input type="text" id="orderBaru" placeholder="Nama Makanan">
-    <button onclick="tambahData()">Tambah +</button>
+    <button class="active" onclick="tambahData()" style="width: 100%;">TAMBAH +</button>
 </div>
 
 <div id="list"></div>
@@ -71,50 +112,50 @@
 <script>
 const url = "https://starellie-default-rtdb.firebaseio.com/Order";
 
+// Fitur Fullscreen
+function toggleFullScreen() {
+    const btn = document.getElementById("fsBtn");
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            btn.innerHTML = "❌ KELUAR";
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            btn.innerHTML = "🖥️ FULLSCREEN";
+        }
+    }
+}
+
 function loadData() {
     fetch(url + ".json")
     .then(res => res.json())
     .then(data => {
         const container = document.getElementById("list");
         container.innerHTML = "";
+        if(!data) return;
 
         for (let nama in data) {
             const item = data[nama];
-
             container.innerHTML += `
                 <div class="card">
                     <h3>${nama}</h3>
-                    <p>Orderan: ${item.Orderan}</p>
-
+                    <p><b>Order:</b> ${item.Orderan}</p>
+                    <hr>
                     <p>Izin membeli lagi:</p>
                     <button class="${item["Izin membeli lagi"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Izin membeli lagi', true)">
-                        TRUE
-                    </button>
-
+                        onclick="updateData('${nama}', 'Izin membeli lagi', true)">TRUE</button>
                     <button class="${!item["Izin membeli lagi"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Izin membeli lagi', false)">
-                        FALSE
-                    </button>
-
-                    <br><br>
+                        onclick="updateData('${nama}', 'Izin membeli lagi', false)">FALSE</button>
 
                     <p>Sudah siap kirim:</p>
                     <button class="${item["Sudah siap kirim"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Sudah siap kirim', true)">
-                        TRUE
-                    </button>
-
+                        onclick="updateData('${nama}', 'Sudah siap kirim', true)">TRUE</button>
                     <button class="${!item["Sudah siap kirim"] ? 'active' : ''}"
-                        onclick="updateData('${nama}', 'Sudah siap kirim', false)">
-                        FALSE
-                    </button>
+                        onclick="updateData('${nama}', 'Sudah siap kirim', false)">FALSE</button>
 
                     <br><br>
-
-                    <button onclick="hapusData('${nama}')">
-                        Hapus Nama
-                    </button>
+                    <button onclick="hapusData('${nama}')" style="width: 100%;">HAPUS NAMA</button>
                 </div>
             `;
         }
@@ -125,30 +166,20 @@ function updateData(nama, field, value) {
     fetch(url + "/" + nama + ".json", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            [field]: value
-        })
-    })
-    .then(() => loadData());
+        body: JSON.stringify({ [field]: value })
+    }).then(() => loadData());
 }
 
 function hapusData(nama) {
-    if (confirm("Yakin mau hapus " + nama + "?")) {
-        fetch(url + "/" + nama + ".json", {
-            method: "DELETE"
-        })
-        .then(() => loadData());
+    if (confirm("Hapus data " + nama + "?")) {
+        fetch(url + "/" + nama + ".json", { method: "DELETE" }).then(() => loadData());
     }
 }
 
 function tambahData() {
     const nama = document.getElementById("namaBaru").value.trim();
     const order = document.getElementById("orderBaru").value.trim();
-
-    if (nama === "" || order === "") {
-        alert("Isi semua field dulu");
-        return;
-    }
+    if (nama === "" || order === "") return;
 
     fetch(url + "/" + nama + ".json", {
         method: "PUT",
@@ -158,8 +189,7 @@ function tambahData() {
             "Izin membeli lagi": false,
             "Sudah siap kirim": false
         })
-    })
-    .then(() => {
+    }).then(() => {
         document.getElementById("namaBaru").value = "";
         document.getElementById("orderBaru").value = "";
         loadData();
