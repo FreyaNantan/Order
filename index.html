@@ -117,12 +117,12 @@ function toggleFullScreen() {
     const btn = document.getElementById("fsBtn");
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().then(() => {
-            btn.innerHTML = "❌ KELUAR";
+            btn.innerHTML = "KELUAR";
         });
     } else {
         if (document.exitFullscreen) {
             document.exitFullscreen();
-            btn.innerHTML = "🖥️ FULLSCREEN";
+            btn.innerHTML = "FULLSCREEN";
         }
     }
 }
