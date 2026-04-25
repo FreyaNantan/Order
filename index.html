@@ -101,6 +101,7 @@
     <input type="text" id="namaBaru" placeholder="Nama Pembeli">
     <input type="text" id="orderBaru" placeholder="Nama Makanan">
     <input type="text" id="alamatBaru" placeholder="alamat pembeli">
+    <input type="text" id="pesanBaru" placeholder="pesan (opsional)">
     <button class="active" onclick="tambahData()" style="width: 100%;">TAMBAH +</button>
 </div>
 
@@ -140,6 +141,11 @@ function loadData() {
                     <h3>${nama}</h3>
                     <p><b>Order:</b> ${item.Orderan}</p>
                     <p><b>alamat:</b> ${item.alamat || "-"}</p>
+                    <p><b>Pesan:</b> ${item.pesan || "-"}</p>
+
+                    <input type="text" id="pesan-${nama}" placeholder="Edit pesan">
+                    <button onclick="updatePesan('${nama}')">SET PESAN</button>
+
                     <hr>
 
                     <p>Izin membeli lagi:</p>
@@ -162,12 +168,23 @@ function loadData() {
     });
 }
 
-// Update Data
+// Update TRUE/FALSE
 function updateData(nama, field, value) {
     fetch(url + "/" + nama + ".json", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value })
+    }).then(() => loadData());
+}
+
+// Update Pesan
+function updatePesan(nama) {
+    const pesanBaru = document.getElementById("pesan-" + nama).value;
+
+    fetch(url + "/" + nama + ".json", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pesan: pesanBaru })
     }).then(() => loadData());
 }
 
@@ -183,6 +200,7 @@ function tambahData() {
     const nama = document.getElementById("namaBaru").value.trim();
     const order = document.getElementById("orderBaru").value.trim();
     const alamat = document.getElementById("alamatBaru").value.trim();
+    const pesan = document.getElementById("pesanBaru").value.trim();
 
     if (nama === "" || order === "" || alamat === "") return;
 
@@ -192,6 +210,7 @@ function tambahData() {
         body: JSON.stringify({
             "Orderan": order,
             "alamat": alamat,
+            "pesan": pesan || "",
             "Izin membeli lagi": false,
             "Sudah siap kirim": false
         })
@@ -199,6 +218,7 @@ function tambahData() {
         document.getElementById("namaBaru").value = "";
         document.getElementById("orderBaru").value = "";
         document.getElementById("alamatBaru").value = "";
+        document.getElementById("pesanBaru").value = "";
         loadData();
     });
 }
