@@ -110,6 +110,8 @@
 <script>
 const url = "https://sistemai-7e9ba-default-rtdb.firebaseio.com/Order";
 
+let sedangMengetik = false;
+
 // Fullscreen
 function toggleFullScreen() {
     const btn = document.getElementById("fsBtn");
@@ -143,7 +145,9 @@ function loadData() {
                     <p><b>alamat:</b> ${item.alamat || "-"}</p>
                     <p><b>Pesan:</b> ${item.pesan || "-"}</p>
 
-                    <input type="text" id="pesan-${nama}" placeholder="Edit pesan">
+                    <input type="text" id="pesan-${nama}" placeholder="Edit pesan"
+                        onfocus="sedangMengetik=true"
+                        onblur="sedangMengetik=false">
                     <button onclick="updatePesan('${nama}')">SET PESAN</button>
 
                     <hr>
@@ -223,9 +227,15 @@ function tambahData() {
     });
 }
 
-// Auto refresh
+// Auto refresh aman
+setInterval(() => {
+    if (!sedangMengetik) {
+        loadData();
+    }
+}, 2000);
+
+// Load pertama
 loadData();
-setInterval(loadData, 2000);
 </script>
 
 </body>
